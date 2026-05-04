@@ -1,54 +1,135 @@
-极简版高精度三维测量仪器 — 模拟与拟合演示
+# 灵寻玉尺 · 3D Measurement Demo
 
-说明
-- 目的：在没有硬件前，提供一个可运行的模拟数据生成、CSV 导入/导出、网格化拟合与 3D 曲面输出的最小原型。
-- 技术栈：Python (numpy, scipy, matplotlib, pandas)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-2ea44f)
+![Status](https://img.shields.io/badge/Status-v2.0%20Production%20Ready-brightgreen)
+![AI Assisted](https://img.shields.io/badge/Development-AI%20Assisted-ff6b35)
 
-快速开始
-1. 建议先创建并激活虚拟环境：
+一个面向工业三维测量场景的 Python 原型系统，用于在无硬件阶段快速验证完整链路：
+数据采集模拟 -> 点云可视化 -> 曲面拟合 -> 结果导出 -> 靶标验证。
 
-## 功能（工业级版本 v2.0）
-python -m venv .venv
-1. **高性能采集**：1ms/点栅格扫描（比原来快 20 倍）
-2. **CSV 导入/导出**：支持外部数据 + 暗黑背景 PNG 导出
-3. **工业级 3D 可视化**：matplotlib + turbo colormap + 荧光青色文字
-4. **高质量曲面拟合**：立方插值 + σ=2.5 高斯滤波
-5. **防呆交互设计**：测量期间自动禁用冲突按钮
-6. **实时状态栏**：动态显示采集/拟合/导出状态
-7. **暗黑主题**：OLED 友好 + 高对比度（#0FF 青色文字）
+## 项目简介
 
-```powershell
-python simulate_and_fit.py generate --out data_sim.csv --points 1000
+本项目聚焦于凹槽类几何特征的测量流程验证，提供两种使用方式：
+
+1. GUI 实时模式：启动模拟扫描，实时查看三维点云与拟合曲面。
+2. CLI 离线模式：批量生成 CSV 数据并输出曲面 PNG。
+
+核心能力：
+
+- 1ms/点的栅格扫描模拟（40x40 可达 1600 点）
+- 支持 CSV/PLY/PCD/XYZ 数据导入（Open3D 可用时）
+- 立方插值 + 可选滤波（高斯 / 中值）
+- 工业风可视化界面与状态反馈
+- 标准凹槽靶标生成与槽深/槽宽验证
+
+## 快速开始
+
+### 1. 克隆并进入项目
+
+```bash
+git clone https://github.com/EVA-zhangsan/3Dmeasurement_demo.git
+cd 3Dmeasurement_demo
 ```
+
+### 2. 创建虚拟环境并安装依赖
+
+Windows PowerShell:
+
 ```powershell
-python simulate_and_fit.py fit --in data_sim.csv --out surface.png --grid 200
-- `simulate_and_fit.py` 包含三部分：模拟数据生成、CSV IO、网格化拟合与图像导出。
-- 目前为离线模式（模拟/CSV），后续会添加串口/TCP 的抽象层以接入真实传感器。
-```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+```
+
+Linux/macOS:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 3. 运行 GUI（推荐）
+
+```powershell
 python gui.py
 ```
 
-功能说明：
-- **导入本地 CSV 文件**：加载已有的 CSV 数据并立即渲染为 3D 拟合曲面。
-- **开始/停止测量**：启动模拟传感器或真实硬件，实时收集点云数据，动态显示在 3D 散点图上。
-- **刷新拟合**：对已收集的点云进行网格化插值，生成光滑的 3D 曲面。
-- **启用滤波**：支持中值滤波或高斯滤波，可在导出前对网格数据进行平滑处理。
-- **导出图片**：将当前 3D 图保存为 PNG 文件。
+或在 Windows 下双击：
 
-架构：
-- `data_source.py`：通信抽象层，包含模拟数据生成器（线程模式）、串口/TCP 占位符。
-- `gui.py`：基于 PySide6 + Matplotlib 的实时可视化界面。
-- `simulate_and_fit.py`：离线数据生成与命令行工具。
+```text
+run_gui.bat
+```
 
-## 标准靶标与测量验证
+## 使用示例
 
-如果你要做算法验证，建议先生成一个可控的凹槽靶标：
+### CLI：生成模拟数据
 
 ```powershell
-Set-Location 'D:\Desktop\过控\measurement_demo'
-.\.venv\Scripts\Activate.ps1
+python simulate_and_fit.py generate --out data_sim.csv --points 1600
+```
+
+### CLI：拟合并导出曲面图
+
+```powershell
+python simulate_and_fit.py fit --in data_sim.csv --out surface.png --grid 200 --method cubic
+```
+
+### 生成标准凹槽靶标
+
+```powershell
 python generate_target.py
 ```
 
-运行后会在当前目录生成 `standard_groove.ply`。然后启动 `python gui.py`，通过“导入点云文件”加载它，就可以在右侧属性面板看到基准平面、凹槽底面、当前槽深和当前槽宽的计算结果。
+会输出 `standard_groove.ply`，理论参数：槽深 3.0 mm，槽宽 10.0 mm。
+
+## 主要功能
+
+- 实时采集：线程化数据源读取，动态显示点云
+- 曲面拟合：griddata 立方插值，支持平滑滤波
+- 质量增强：统计离群点去除（Open3D）
+- 导出能力：支持 PNG 截图导出
+- 交互防呆：测量期间自动禁用冲突操作
+
+## 项目结构
+
+```text
+measurement_demo/
+├─ gui.py                    # 主 GUI（PySide6 + PyVista）
+├─ gui_pyvista.py            # 旧版/实验界面
+├─ data_source.py            # 数据源抽象与模拟采集
+├─ point_processing.py       # 点云处理（离群点过滤）
+├─ simulate_and_fit.py       # CLI 数据生成与拟合导出
+├─ generate_target.py        # 标准凹槽靶标生成
+├─ requirements.txt          # Python 依赖
+├─ check_deployment.py       # 部署检查脚本
+└─ *.md                      # 说明、验证与交付文档
+```
+
+## AI 在开发中的应用
+
+本项目采用 AI 协同开发方式：
+
+- 快速完成原型搭建与模块重构
+- 辅助参数调优（刷新频率、滤波强度、可视化呈现）
+- 自动化生成与维护技术文档和交付说明
+
+AI 主要用于提升研发效率与工程规范性，核心测量逻辑仍基于物理建模与数值计算。
+
+## 当前进度
+
+- 已完成：v2.0 工业级原型闭环（演示与交付就绪）
+- 进行中：真实硬件串口/TCP 数据源接入
+- 下一步：自动化测试与 CI 工作流
+
+## 文档索引
+
+- `INDUSTRIAL_UI_COMPLETE.md`：工业级界面改造细节
+- `VERIFICATION.md`：物理坐标与算法验证
+- `DEPLOYMENT.md`：交付清单与部署指南
+- `PYVISTA_OPEN3D_UPGRADE.md`：PyVista/Open3D 升级记录
+
+## 许可证
+
+当前仓库尚未添加许可证文件。建议补充 `LICENSE`（如 MIT）以便开源协作。
