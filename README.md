@@ -2,6 +2,8 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-2ea44f)
+![CI](https://github.com/EVA-zhangsan/3Dmeasurement_demo/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/github/license/EVA-zhangsan/3Dmeasurement_demo)
 ![Status](https://img.shields.io/badge/Status-v2.0%20Production%20Ready-brightgreen)
 ![AI Assisted](https://img.shields.io/badge/Development-AI%20Assisted-ff6b35)
 
